@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Text;
 
 namespace HookTest
 {
@@ -28,9 +29,9 @@ namespace HookTest
 		/// <summary/>		
 		public void Init()
 		{
-			ProcessModule objCurrentModule = Process.GetCurrentProcess().MainModule;
+			ProcessModule currentModule = Process.GetCurrentProcess().MainModule;
 			keyboardProcess = new LowLevelKeyboardProc(CaptureKey);
-			ptrHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardProcess, GetModuleHandle(objCurrentModule.ModuleName), 0);
+			ptrHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardProcess, GetModuleHandle(currentModule.ModuleName), 0);
 		}
 
 		/// <summary>
@@ -92,8 +93,7 @@ namespace HookTest
 			Toggled = 2
 		}
 
-		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-		private static extern short GetKeyState(int keyCode);
+		private StringBuilder Input = new StringBuilder(9);
 
 
 		/// <summary>
@@ -105,6 +105,10 @@ namespace HookTest
 		/// <returns></returns>
 		private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+		#region DllImport
+		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+		private static extern short GetKeyState(int keyCode);
+
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern IntPtr SetWindowsHookEx(int id, LowLevelKeyboardProc callback, IntPtr hMod, uint dwThreadId);
 
@@ -114,12 +118,32 @@ namespace HookTest
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern IntPtr GetModuleHandle(string name);
 
+		[DllImport("user32.dll", SetLastError = true)]
+		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+		[DllImport("user32.dll")]
+		static extern uint GetKeyboardLayoutList(int nBuff, [Out] IntPtr[] lpList);
+		[DllImport("user32.dll")]
+		private static extern IntPtr LoadKeyboardLayout(string pwszKLID, uint Flags);
+		[DllImport("user32.dll")]
+		static extern bool GetKeyboardLayoutName([Out] StringBuilder pwszKLID);
+		[DllImport("user32.dll")]
+		static extern IntPtr GetKeyboardLayout(uint idThread);
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetForegroundWindow();
+		[DllImport("user32.dll")]
+		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
+		#endregion
+
 		private IntPtr ptrHook;
 
 		private LowLevelKeyboardProc keyboardProcess;
 
 		private const string PRESSED_MSG = "Нажата";
 		private const string NOT_PRESSED_MSG = "Отпущена";
+		private const string EN_KL = "00000409";
+		private const string RU_KL = "00000419";
+
 		private IntPtr CaptureKey(int nCode, IntPtr wParam, IntPtr lParam)
 		{
 			if (nCode >= 0)
@@ -162,8 +186,16 @@ namespace HookTest
 		public bool IsCapsLockOn => GetKeyState((int)Keys.CapsLock) == 1;
 		public bool IsNumLockOn => GetKeyState((int)Keys.NumLock) == 1;
 
+		private enum KeyLayout
+		{
+			En,
+			Ru,
+			Unknown
+		}
+
 		private void ProcessCapture(KBDLLHOOKSTRUCT keyInfo)
 		{
+			#region Неиспользуемые клавиши
 			switch (keyInfo.key)
 			{
 				case Keys.F1:
@@ -212,7 +244,9 @@ namespace HookTest
 				case Keys.RButton:
 					return;
 			}
+			#endregion
 
+			#region Независимые от раскладки Клавиши
 			switch (keyInfo.key)
 			{
 				case Keys.KeyCode:
@@ -323,107 +357,11 @@ namespace HookTest
 				case Keys.D1:
 					CapturedText += IsShiftPressed ? "!" : "1";
 					break;
-				case Keys.D2:
-					CapturedText += IsShiftPressed ? "@" : "2";
-					break;
-				case Keys.D3:
-					CapturedText += IsShiftPressed ? "#" : "3";
-					break;
-				case Keys.D4:
-					CapturedText += IsShiftPressed ? "$" : "4";
-					break;
-				case Keys.D5:
-					CapturedText += IsShiftPressed ? "%" : "5";
-					break;
-				case Keys.D6:
-					CapturedText += IsShiftPressed ? "^" : "6";
-					break;
-				case Keys.D7:
-					CapturedText += IsShiftPressed ? "&" : "7";
-					break;
 				case Keys.D8:
 					CapturedText += IsShiftPressed ? "*" : "8";
 					break;
 				case Keys.D9:
 					CapturedText += IsShiftPressed ? "(" : "9";
-					break;
-				case Keys.A:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "A" : "a";
-					break;
-				case Keys.B:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "B" : "b";
-					break;
-				case Keys.C:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "C" : "c";
-					break;
-				case Keys.D:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "D" : "d";
-					break;
-				case Keys.E:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "E" : "e";
-					break;
-				case Keys.F:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "F" : "f";
-					break;
-				case Keys.G:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "G" : "g";
-					break;
-				case Keys.H:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "H" : "h";
-					break;
-				case Keys.I:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "I" : "i";
-					break;
-				case Keys.J:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "J" : "j";
-					break;
-				case Keys.K:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "K" : "k";
-					break;
-				case Keys.L:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "L" : "l";
-					break;
-				case Keys.M:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "M" : "m";
-					break;
-				case Keys.N:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "N" : "n";
-					break;
-				case Keys.O:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "O" : "o";
-					break;
-				case Keys.P:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "P" : "p";
-					break;
-				case Keys.Q:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "Q" : "q";
-					break;
-				case Keys.R:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "R" : "r";
-					break;
-				case Keys.S:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "S" : "s";
-					break;
-				case Keys.T:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "T" : "t";
-					break;
-				case Keys.U:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "U" : "u";
-					break;
-				case Keys.V:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "V" : "v";
-					break;
-				case Keys.W:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "W" : "w";
-					break;
-				case Keys.X:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "X" : "x";
-					break;
-				case Keys.Y:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "Y" : "y";
-					break;
-				case Keys.Z:
-					CapturedText += IsCapsLockOn || IsShiftPressed ? "Z" : "z";
 					break;
 				case Keys.LWin:
 					break;
@@ -473,10 +411,7 @@ namespace HookTest
 					break;
 				case Keys.Subtract:
 					CapturedText += "-";
-					break;
-				case Keys.Decimal:
-					CapturedText += "ю";
-					break;
+					break;				
 				case Keys.Divide:
 					CapturedText += "/";
 					break;
@@ -495,52 +430,25 @@ namespace HookTest
 				case Keys.LMenu:
 					break;
 				case Keys.RMenu:
-					break;
-				case Keys.OemSemicolon:
-					CapturedText += IsShiftPressed ? ":" : ";";
-					break;
+					break;				
 				//case Keys.Oem1:
 				//	break;
 				case Keys.Oemplus:
 					CapturedText += IsShiftPressed ? "+" : "=";
-					break;
-				case Keys.Oemcomma:
-					CapturedText += IsShiftPressed ? "<" : ",";
-					break;
+					break;				
 				case Keys.OemMinus:
 					CapturedText += IsShiftPressed ? "_" : "-";
-					break;
-				case Keys.OemPeriod:
-					CapturedText += IsShiftPressed ? ">" : ".";
-					break;
-				case Keys.OemQuestion:
-					CapturedText += IsShiftPressed ? "?" : "/";
-					break;
+					break;							
 				//case Keys.Oem2:
-				//	break;
-				case Keys.Oemtilde:
-					CapturedText += IsShiftPressed ? "~" : "`";
-					break;
+				//	break;				
 				//case Keys.Oem3:
-				//break;
-				case Keys.OemOpenBrackets:
-					CapturedText += IsShiftPressed ? "{" : "[";
-					break;
+				//break;				
 				//case Keys.Oem4:
-				//	break;
-				case Keys.OemPipe:
-					CapturedText += IsShiftPressed ? "|" : "\\";
-					break;
+				//	break;				
 				//case Keys.Oem5:
-				//	break;
-				case Keys.OemCloseBrackets:
-					CapturedText += IsShiftPressed ? "}" : "]";
-					break;
+				//	break;				
 				//case Keys.Oem6:
-				//	break;
-				case Keys.OemQuotes:
-					CapturedText += IsShiftPressed ? "\"" : "'";
-					break;
+				//	break;				
 				//case Keys.Oem7:
 				//	break;
 				case Keys.Oem8:
@@ -576,11 +484,367 @@ namespace HookTest
 				case Keys.Control:
 					break;
 				case Keys.Alt:
+					break;				
+			}
+			#endregion
+
+			var input = GetInput();
+			var keyLayout = KeyLayout.Unknown;
+			switch (Input.ToString())
+			{
+				case EN_KL:
+					keyLayout = KeyLayout.En;
+					break;
+				case RU_KL:
+					keyLayout = KeyLayout.Ru;
 					break;
 				default:
-					return;
+					throw new Exception("Неподдерживаемая раскладка клавиатуры");
 			}
+
+			Trace.WriteLine($"Раскладка: {keyLayout}");
+			if (keyLayout == KeyLayout.En)
+			{
+				switch (keyInfo.key)
+				{
+					case Keys.D2:
+						CapturedText += IsShiftPressed ? "@" : "2";
+						break;
+					case Keys.D3:
+						CapturedText += IsShiftPressed ? "#" : "3";
+						break;
+					case Keys.D4:
+						CapturedText += IsShiftPressed ? "$" : "4";
+						break;
+					case Keys.D5:
+						CapturedText += IsShiftPressed ? "%" : "5";
+						break;
+					case Keys.D6:
+						CapturedText += IsShiftPressed ? "^" : "6";
+						break;
+					case Keys.D7:
+						CapturedText += IsShiftPressed ? "&" : "7";
+						break;
+					case Keys.A:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "A" : "a";
+						break;
+					case Keys.B:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "B" : "b";
+						break;
+					case Keys.C:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "C" : "c";
+						break;
+					case Keys.D:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "D" : "d";
+						break;
+					case Keys.E:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "E" : "e";
+						break;
+					case Keys.F:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "F" : "f";
+						break;
+					case Keys.G:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "G" : "g";
+						break;
+					case Keys.H:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "H" : "h";
+						break;
+					case Keys.I:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "I" : "i";
+						break;
+					case Keys.J:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "J" : "j";
+						break;
+					case Keys.K:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "K" : "k";
+						break;
+					case Keys.L:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "L" : "l";
+						break;
+					case Keys.M:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "M" : "m";
+						break;
+					case Keys.N:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "N" : "n";
+						break;
+					case Keys.O:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "O" : "o";
+						break;
+					case Keys.P:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "P" : "p";
+						break;
+					case Keys.Q:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Q" : "q";
+						break;
+					case Keys.R:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "R" : "r";
+						break;
+					case Keys.S:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "S" : "s";
+						break;
+					case Keys.T:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "T" : "t";
+						break;
+					case Keys.U:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "U" : "u";
+						break;
+					case Keys.V:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "V" : "v";
+						break;
+					case Keys.W:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "W" : "w";
+						break;
+					case Keys.X:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "X" : "x";
+						break;
+					case Keys.Y:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Y" : "y";
+						break;
+					case Keys.Z:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Z" : "z";
+						break;
+					case Keys.OemSemicolon:
+						CapturedText += IsShiftPressed ? ":" : ";";
+						break;
+					//case Keys.Oem1:
+					//	break;					
+					case Keys.Oemcomma:
+						CapturedText += IsShiftPressed ? "<" : ",";
+						break;
+					case Keys.OemPeriod:
+						CapturedText += IsShiftPressed ? ">" : ".";
+						break;
+					case Keys.OemQuestion:
+						CapturedText += IsShiftPressed ? "?" : "/";
+						break;
+					//case Keys.Oem2:
+					//	break;
+					case Keys.Oemtilde:
+						CapturedText += IsShiftPressed ? "~" : "`";
+						break;
+					//case Keys.Oem3:
+					//break;
+					case Keys.OemOpenBrackets:
+						CapturedText += IsShiftPressed ? "{" : "[";
+						break;
+					//case Keys.Oem4:
+					//	break;
+					case Keys.OemPipe:
+						CapturedText += IsShiftPressed ? "|" : "\\";
+						break;
+					//case Keys.Oem5:
+					//	break;
+					case Keys.OemCloseBrackets:
+						CapturedText += IsShiftPressed ? "}" : "]";
+						break;
+					//case Keys.Oem6:
+					//	break;
+					case Keys.OemQuotes:
+						CapturedText += IsShiftPressed ? "\"" : "'";
+						break;
+					case Keys.Decimal:
+						CapturedText += ".";
+						break;
+					//case Keys.Oem7:
+					//	break;
+					case Keys.Oem8:
+						break;
+					case Keys.OemBackslash:
+						break;
+					//case Keys.Oem102:
+					//	break;
+					case Keys.ProcessKey:
+						break;
+					case Keys.Packet:
+						break;
+					case Keys.Attn:
+						break;
+					case Keys.Crsel:
+						break;
+					case Keys.NoName:
+						break;
+					case Keys.Pa1:
+						break;
+					case Keys.OemClear:
+						break;
+				}
+			}
+
+			if (keyLayout == KeyLayout.Ru)
+			{
+				switch (keyInfo.key)
+				{
+					case Keys.D2:
+						CapturedText += IsShiftPressed ? "\"" : "2";
+						break;
+					case Keys.D3:
+						CapturedText += IsShiftPressed ? "№" : "3";
+						break;
+					case Keys.D4:
+						CapturedText += IsShiftPressed ? ";" : "4";
+						break;
+					case Keys.D5:
+						CapturedText += IsShiftPressed ? "%" : "5";
+						break;
+					case Keys.D6:
+						CapturedText += IsShiftPressed ? ":" : "6";
+						break;
+					case Keys.D7:
+						CapturedText += IsShiftPressed ? "?" : "7";
+						break;
+					case Keys.A:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Ф" : "ф";
+						break;
+					case Keys.B:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "И" : "и";
+						break;
+					case Keys.C:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "С" : "с";
+						break;
+					case Keys.D:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "В" : "в";
+						break;
+					case Keys.E:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "У" : "у";
+						break;
+					case Keys.F:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "А" : "а";
+						break;
+					case Keys.G:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "П" : "п";
+						break;
+					case Keys.H:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Р" : "р";
+						break;
+					case Keys.I:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Ш" : "ш";
+						break;
+					case Keys.J:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "О" : "о";
+						break;
+					case Keys.K:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Л" : "л";
+						break;
+					case Keys.L:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Д" : "д";
+						break;
+					case Keys.M:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Ь" : "ь";
+						break;
+					case Keys.N:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Т" : "т";
+						break;
+					case Keys.O:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Щ" : "щ";
+						break;
+					case Keys.P:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "З" : "з";
+						break;
+					case Keys.Q:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Й" : "й";
+						break;
+					case Keys.R:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "К" : "к";
+						break;
+					case Keys.S:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Ы" : "ы";
+						break;
+					case Keys.T:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Е" : "е";
+						break;
+					case Keys.U:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Г" : "г";
+						break;
+					case Keys.V:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "М" : "м";
+						break;
+					case Keys.W:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Ц" : "ц";
+						break;
+					case Keys.X:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Ч" : "ч";
+						break;
+					case Keys.Y:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Н" : "н";
+						break;
+					case Keys.Z:
+						CapturedText += IsCapsLockOn || IsShiftPressed ? "Я" : "я";
+						break;
+					case Keys.OemSemicolon:
+						CapturedText += IsShiftPressed ? "Ж" : "ж";
+						break;
+					//case Keys.Oem1:
+					//	break;					
+					case Keys.Oemcomma:
+						CapturedText += IsShiftPressed ? "Б" : "б";
+						break;
+					case Keys.OemPeriod:
+						CapturedText += IsShiftPressed ? "Ю" : "ю";
+						break;
+					case Keys.OemQuestion:
+						CapturedText += IsShiftPressed ? "," : ".";
+						break;
+					//case Keys.Oem2:
+					//	break;
+					case Keys.Oemtilde:
+						CapturedText += IsShiftPressed ? "Ё" : "ё";
+						break;
+					//case Keys.Oem3:
+					//break;
+					case Keys.OemOpenBrackets:
+						CapturedText += IsShiftPressed ? "Х" : "х";
+						break;
+					//case Keys.Oem4:
+					//	break;
+					case Keys.OemPipe:
+						CapturedText += IsShiftPressed ? "/" : "\\";
+						break;
+					//case Keys.Oem5:
+					//	break;
+					case Keys.OemCloseBrackets:
+						CapturedText += IsShiftPressed ? "Ъ" : "ъ";
+						break;
+					//case Keys.Oem6:
+					//	break;
+					case Keys.OemQuotes:
+						CapturedText += IsShiftPressed ? "Э" : "э";
+						break;
+					case Keys.Decimal:
+						CapturedText += ",";
+						break;
+					//case Keys.Oem7:
+					//	break;
+					case Keys.Oem8:
+						break;
+					case Keys.OemBackslash:
+						break;
+					//case Keys.Oem102:
+					//	break;
+					case Keys.ProcessKey:
+						break;
+					case Keys.Packet:
+						break;
+					case Keys.Attn:
+						break;
+					case Keys.Crsel:
+						break;
+					case Keys.NoName:
+						break;
+					case Keys.Pa1:
+						break;
+					case Keys.OemClear:
+						break;
+				}
+			}
+
 		}
 
+		private StringBuilder GetInput()
+		{
+			IntPtr layout = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero));
+			//ActivateKeyboardLayout((int)layout, 100);
+			GetKeyboardLayoutName(Input);
+			return Input;
+		}
 	}
 }
