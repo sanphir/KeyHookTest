@@ -293,8 +293,13 @@ namespace HookTest
 		/// Сюда запоминаем когда нажат шифт
 		/// </summary>
 		bool? _isShiftPressed;
-		public bool IsShiftPressed => _isShiftPressed ?? (GetKeyState((int)Keys.LShiftKey) < 0) || (GetKeyState((int)Keys.RShiftKey) < 0);
+		public bool IsShiftPressed => _isShiftPressed?? (GetKeyState((int)Keys.LShiftKey) < 0) || (GetKeyState((int)Keys.RShiftKey) < 0);
 		public bool IsCapsLockOn => GetKeyState((int)Keys.CapsLock) == 1;
+
+		/// <summary>
+		/// Большая или маленькая буква должна быть
+		/// </summary>
+		public bool IsCapsLiteral => (IsCapsLockOn && !IsShiftPressed) || (!IsCapsLockOn && IsShiftPressed);
 		public bool IsNumLockOn => GetKeyState((int)Keys.NumLock) == 1;
 
 		private enum KeyLayout
@@ -644,82 +649,82 @@ namespace HookTest
 						SetCapturedText(IsShiftPressed ? "&" : "7");
 						break;
 					case Keys.A:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "A" : "a");
+						SetCapturedText(IsCapsLiteral ? "A" : "a");
 						break;
 					case Keys.B:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "B" : "b");
+						SetCapturedText(IsCapsLiteral ? "B" : "b");
 						break;
 					case Keys.C:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "C" : "c");
+						SetCapturedText(IsCapsLiteral ? "C" : "c");
 						break;
 					case Keys.D:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "D" : "d");
+						SetCapturedText(IsCapsLiteral ? "D" : "d");
 						break;
 					case Keys.E:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "E" : "e");
+						SetCapturedText(IsCapsLiteral ? "E" : "e");
 						break;
 					case Keys.F:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "F" : "f");
+						SetCapturedText(IsCapsLiteral ? "F" : "f");
 						break;
 					case Keys.G:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "G" : "g");
+						SetCapturedText(IsCapsLiteral ? "G" : "g");
 						break;
 					case Keys.H:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "H" : "h");
+						SetCapturedText(IsCapsLiteral ? "H" : "h");
 						break;
 					case Keys.I:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "I" : "i");
+						SetCapturedText(IsCapsLiteral ? "I" : "i");
 						break;
 					case Keys.J:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "J" : "j");
+						SetCapturedText(IsCapsLiteral ? "J" : "j");
 						break;
 					case Keys.K:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "K" : "k");
+						SetCapturedText(IsCapsLiteral ? "K" : "k");
 						break;
 					case Keys.L:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "L" : "l");
+						SetCapturedText(IsCapsLiteral ? "L" : "l");
 						break;
 					case Keys.M:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "M" : "m");
+						SetCapturedText(IsCapsLiteral ? "M" : "m");
 						break;
 					case Keys.N:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "N" : "n");
+						SetCapturedText(IsCapsLiteral ? "N" : "n");
 						break;
 					case Keys.O:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "O" : "o");
+						SetCapturedText(IsCapsLiteral ? "O" : "o");
 						break;
 					case Keys.P:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "P" : "p");
+						SetCapturedText(IsCapsLiteral ? "P" : "p");
 						break;
 					case Keys.Q:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Q" : "q");
+						SetCapturedText(IsCapsLiteral ? "Q" : "q");
 						break;
 					case Keys.R:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "R" : "r");
+						SetCapturedText(IsCapsLiteral ? "R" : "r");
 						break;
 					case Keys.S:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "S" : "s");
+						SetCapturedText(IsCapsLiteral ? "S" : "s");
 						break;
 					case Keys.T:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "T" : "t");
+						SetCapturedText(IsCapsLiteral ? "T" : "t");
 						break;
 					case Keys.U:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "U" : "u");
+						SetCapturedText(IsCapsLiteral ? "U" : "u");
 						break;
 					case Keys.V:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "V" : "v");
+						SetCapturedText(IsCapsLiteral ? "V" : "v");
 						break;
 					case Keys.W:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "W" : "w");
+						SetCapturedText(IsCapsLiteral ? "W" : "w");
 						break;
 					case Keys.X:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "X" : "x");
+						SetCapturedText(IsCapsLiteral ? "X" : "x");
 						break;
 					case Keys.Y:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Y" : "y");
+						SetCapturedText(IsCapsLiteral ? "Y" : "y");
 						break;
 					case Keys.Z:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Z" : "z");
+						SetCapturedText(IsCapsLiteral ? "Z" : "z");
 						break;
 					case Keys.OemSemicolon:
 						SetCapturedText(IsShiftPressed ? ":" : ";");
@@ -811,93 +816,93 @@ namespace HookTest
 						SetCapturedText(IsShiftPressed ? "?" : "7");
 						break;
 					case Keys.A:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Ф" : "ф");
+						SetCapturedText(IsCapsLiteral ? "Ф" : "ф");
 						break;
 					case Keys.B:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "И" : "и");
+						SetCapturedText(IsCapsLiteral ? "И" : "и");
 						break;
 					case Keys.C:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "С" : "с");
+						SetCapturedText(IsCapsLiteral ? "С" : "с");
 						break;
 					case Keys.D:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "В" : "в");
+						SetCapturedText(IsCapsLiteral ? "В" : "в");
 						break;
 					case Keys.E:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "У" : "у");
+						SetCapturedText(IsCapsLiteral ? "У" : "у");
 						break;
 					case Keys.F:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "А" : "а");
+						SetCapturedText(IsCapsLiteral ? "А" : "а");
 						break;
 					case Keys.G:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "П" : "п");
+						SetCapturedText(IsCapsLiteral ? "П" : "п");
 						break;
 					case Keys.H:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Р" : "р");
+						SetCapturedText(IsCapsLiteral ? "Р" : "р");
 						break;
 					case Keys.I:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Ш" : "ш");
+						SetCapturedText(IsCapsLiteral ? "Ш" : "ш");
 						break;
 					case Keys.J:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "О" : "о");
+						SetCapturedText(IsCapsLiteral ? "О" : "о");
 						break;
 					case Keys.K:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Л" : "л");
+						SetCapturedText(IsCapsLiteral ? "Л" : "л");
 						break;
 					case Keys.L:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Д" : "д");
+						SetCapturedText(IsCapsLiteral ? "Д" : "д");
 						break;
 					case Keys.M:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Ь" : "ь");
+						SetCapturedText(IsCapsLiteral ? "Ь" : "ь");
 						break;
 					case Keys.N:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Т" : "т");
+						SetCapturedText(IsCapsLiteral ? "Т" : "т");
 						break;
 					case Keys.O:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Щ" : "щ");
+						SetCapturedText(IsCapsLiteral ? "Щ" : "щ");
 						break;
 					case Keys.P:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "З" : "з");
+						SetCapturedText(IsCapsLiteral ? "З" : "з");
 						break;
 					case Keys.Q:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Й" : "й");
+						SetCapturedText(IsCapsLiteral ? "Й" : "й");
 						break;
 					case Keys.R:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "К" : "к");
+						SetCapturedText(IsCapsLiteral ? "К" : "к");
 						break;
 					case Keys.S:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Ы" : "ы");
+						SetCapturedText(IsCapsLiteral ? "Ы" : "ы");
 						break;
 					case Keys.T:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Е" : "е");
+						SetCapturedText(IsCapsLiteral ? "Е" : "е");
 						break;
 					case Keys.U:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Г" : "г");
+						SetCapturedText(IsCapsLiteral ? "Г" : "г");
 						break;
 					case Keys.V:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "М" : "м");
+						SetCapturedText(IsCapsLiteral ? "М" : "м");
 						break;
 					case Keys.W:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Ц" : "ц");
+						SetCapturedText(IsCapsLiteral ? "Ц" : "ц");
 						break;
 					case Keys.X:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Ч" : "ч");
+						SetCapturedText(IsCapsLiteral ? "Ч" : "ч");
 						break;
 					case Keys.Y:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Н" : "н");
+						SetCapturedText(IsCapsLiteral ? "Н" : "н");
 						break;
 					case Keys.Z:
-						SetCapturedText(IsCapsLockOn || IsShiftPressed ? "Я" : "я");
+						SetCapturedText(IsCapsLiteral ? "Я" : "я");
 						break;
 					case Keys.OemSemicolon:
-						SetCapturedText(IsShiftPressed ? "Ж" : "ж");
+						SetCapturedText(IsCapsLiteral ? "Ж" : "ж");
 						break;
 					//case Keys.Oem1:
 					//	break;					
 					case Keys.Oemcomma:
-						SetCapturedText(IsShiftPressed ? "Б" : "б");
+						SetCapturedText(IsCapsLiteral ? "Б" : "б");
 						break;
 					case Keys.OemPeriod:
-						SetCapturedText(IsShiftPressed ? "Ю" : "ю");
+						SetCapturedText(IsCapsLiteral ? "Ю" : "ю");
 						break;
 					case Keys.OemQuestion:
 						SetCapturedText(IsShiftPressed ? "," : ".");
@@ -905,12 +910,12 @@ namespace HookTest
 					//case Keys.Oem2:
 					//	break;
 					case Keys.Oemtilde:
-						SetCapturedText(IsShiftPressed ? "Ё" : "ё");
+						SetCapturedText(IsCapsLiteral ? "Ё" : "ё");
 						break;
 					//case Keys.Oem3:
 					//break;
 					case Keys.OemOpenBrackets:
-						SetCapturedText(IsShiftPressed ? "Х" : "х");
+						SetCapturedText(IsCapsLiteral ? "Х" : "х");
 						break;
 					//case Keys.Oem4:
 					//	break;
@@ -920,12 +925,12 @@ namespace HookTest
 					//case Keys.Oem5:
 					//	break;
 					case Keys.OemCloseBrackets:
-						SetCapturedText(IsShiftPressed ? "Ъ" : "ъ");
+						SetCapturedText(IsCapsLiteral ? "Ъ" : "ъ");
 						break;
 					//case Keys.Oem6:
 					//	break;
 					case Keys.OemQuotes:
-						SetCapturedText(IsShiftPressed ? "Э" : "э");
+						SetCapturedText(IsCapsLiteral ? "Э" : "э");
 						break;
 					case Keys.Decimal:
 						SetCapturedText(",");
