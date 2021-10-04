@@ -26,6 +26,7 @@ namespace HookTest
 		private void button1_Click(object sender, EventArgs e)
 		{
 			textBox1.Text = "";
+			textBox1.Focus();
 			KeyHook.Instance().StartCapture();
 		}
 	}
